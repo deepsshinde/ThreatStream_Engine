@@ -1,0 +1,77 @@
+[
+  {
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "serviceName": "iam.googleapis.com",
+      "methodName": "google.iam.admin.v1.CreateServiceAccount",
+      "authenticationInfo": {"principalEmail": "devops.lead@example-corp.com"},
+      "requestMetadata": {"callerIp": "34.105.22.9", "callerSuppliedUserAgent": "google-cloud-sdk"},
+      "resourceName": "projects/prod-analytics-2811",
+      "request": {"name": "projects/prod-analytics-2811", "account": {"accountId": "data-exporter-ext", "displayName": "Data Exporter External"}}
+    },
+    "severity": "NOTICE",
+    "logName": "projects/prod-analytics-2811/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-09-24T09:19:05Z",
+    "resource": {"type": "service_account", "labels": {"project_id": "prod-analytics-2811"}}
+  },
+  {
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "serviceName": "iam.googleapis.com",
+      "methodName": "google.iam.admin.v1.CreateServiceAccountKey",
+      "authenticationInfo": {"principalEmail": "devops.lead@example-corp.com"},
+      "requestMetadata": {"callerIp": "34.105.22.9", "callerSuppliedUserAgent": "google-cloud-sdk"},
+      "resourceName": "projects/prod-analytics-2811/serviceAccounts/data-exporter-ext@prod-analytics-2811.iam.gserviceaccount.com",
+      "request": {"name": "projects/-/serviceAccounts/data-exporter-ext@prod-analytics-2811.iam.gserviceaccount.com", "keyAlgorithm": "KEY_ALG_RSA_2048", "privateKeyType": "TYPE_GOOGLE_CREDENTIALS_FILE"}
+    },
+    "severity": "NOTICE",
+    "logName": "projects/prod-analytics-2811/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-09-24T09:19:35Z",
+    "resource": {"type": "service_account", "labels": {"project_id": "prod-analytics-2811"}}
+  },
+  {
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "serviceName": "cloudresourcemanager.googleapis.com",
+      "methodName": "SetIamPolicy",
+      "authenticationInfo": {"principalEmail": "intern.42@example-corp.com"},
+      "requestMetadata": {"callerIp": "35.220.10.80", "callerSuppliedUserAgent": "google-cloud-sdk"},
+      "resourceName": "projects/prod-analytics-2811",
+      "request": {"resource": "projects/prod-analytics-2811", "policy": {"bindings": [{"role": "roles/owner", "members": ["user:intern.42@example-corp.com"]}]}}
+    },
+    "severity": "NOTICE",
+    "logName": "projects/prod-analytics-2811/logs/cloudaudit.googleapis.com%2Factivity",
+    "timestamp": "2026-09-24T09:20:10Z",
+    "resource": {"type": "project", "labels": {"project_id": "prod-analytics-2811"}}
+  },
+  {
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "status": {"code": 7, "message": "PERMISSION_DENIED: storage.objects.get denied to caller"},
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.objects.get",
+      "authenticationInfo": {"principalEmail": "intern.42@example-corp.com"},
+      "requestMetadata": {"callerIp": "35.220.10.80", "callerSuppliedUserAgent": "google-cloud-sdk"},
+      "resourceName": "projects/_/buckets/prod-terraform-state-sensitive",
+      "request": {"bucket": "prod-terraform-state-sensitive", "object": "prod/default.tfstate"}
+    },
+    "severity": "ERROR",
+    "logName": "projects/prod-analytics-2811/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-24T09:20:41Z",
+    "resource": {"type": "gcs_bucket", "labels": {"bucket_name": "prod-terraform-state-sensitive"}}
+  },
+  {
+    "protoPayload": {
+      "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+      "serviceName": "storage.googleapis.com",
+      "methodName": "storage.buckets.list",
+      "authenticationInfo": {"principalEmail": "analytics-readonly@example-corp.com"},
+      "requestMetadata": {"callerIp": "34.105.22.9", "callerSuppliedUserAgent": "google-cloud-sdk"},
+      "resourceName": "projects/prod-analytics-2811"
+    },
+    "severity": "INFO",
+    "logName": "projects/prod-analytics-2811/logs/cloudaudit.googleapis.com%2Fdata_access",
+    "timestamp": "2026-09-24T09:21:15Z",
+    "resource": {"type": "gcs_bucket", "labels": {}}
+  }
+]

@@ -1,0 +1,120 @@
+# ---------------------------------------------------------------------------
+# AWS CloudTrail -> OCSF
+# ConsoleLogin / AssumeRole -> Authentication (3002)
+# User / policy management  -> Account Change (3001)
+# Everything else           -> API Activity (6003)
+# ---------------------------------------------------------------------------
+source_name: aws_cloudtrail
+description: AWS CloudTrail management plane events
+priority: 60
+
+detection:
+  required_fields:
+    - eventSource
+    - eventName
+    - eventTime
+  field_patterns:
+    eventSource: "*.amazonaws.com"
+  any_of_fields: []
+
+ocsf:
+  class_uid: 6003
+  class_name: API Activity
+  category_uid: 6
+  category_name: Application Activity
+  severity_id: 1
+  severity: Informational
+  # Applied when the mapped status_id is 2 (Failure)
+  on_failure:
+    severity_id: 2
+    severity: Low
+
+metadata:
+  product_name: CloudTrail
+  vendor_name: AWS
+
+activity:
+  field: "{eventName}"
+  map:
+    ConsoleLogin:
+      uid: 1
+      name: Logon
+      class_uid: 3002
+      class_name: Authentication
+      category_uid: 3
+      category_name: Identity & Access Management
+    AssumeRole:
+      uid: 1
+      name: Logon
+      class_uid: 3002
+      class_name: Authentication
+      category_uid: 3
+      category_name: Identity & Access Management
+    CreateUser:
+      uid: 1
+      name: Create
+      class_uid: 3001
+      class_name: Account Change
+      category_uid: 3
+      category_name: Identity & Access Management
+    DeleteUser:
+      uid: 4
+      name: Delete
+      class_uid: 3001
+      class_name: Account Change
+      category_uid: 3
+      category_name: Identity & Access Management
+    PutUserPolicy:
+      uid: 8
+      name: Update
+      class_uid: 3001
+      class_name: Account Change
+      category_uid: 3
+      category_name: Identity & Access Management
+      severity_id: 2
+      severity: Low
+    Describe*:
+      uid: 2
+      name: Read
+    Get*:
+      uid: 2
+      name: Read
+    List*:
+      uid: 2
+      name: Read
+  default:
+    uid: 99
+    name: Other
+
+fields:
+  time: "{eventTime}"
+  status:
+    enum:
+      evaluate: "{errorCode}"
+      values:
+        null: Success
+      other: Failure
+  status_id:
+    enum:
+      evaluate: "{errorCode}"
+      values:
+        null: 1
+      other: 2
+  status_detail: "{errorCode}"
+  actor:
+    user:
+      name: "{userIdentity.userName}"
+      type: "{userIdentity.type}"
+      uid: "{userIdentity.principalId}"
+  src_endpoint:
+    ip: "{sourceIPAddress}"
+  http_request:
+    user_agent: "{userAgent}"
+  api:
+    operation: "{eventName}"
+    service:
+      name: "{eventSource}"
+  cloud:
+    region: "{awsRegion}"
+    account:
+      uid: "{recipientAccountId}"

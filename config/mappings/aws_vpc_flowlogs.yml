@@ -1,0 +1,78 @@
+# ---------------------------------------------------------------------------
+# AWS VPC Flow Logs (JSON format, e.g. delivered via CloudWatch) -> OCSF
+# All records -> Network Activity (4001)
+# ---------------------------------------------------------------------------
+source_name: aws_vpc_flowlogs
+description: AWS VPC Flow Logs in JSON format
+priority: 20
+
+detection:
+  required_fields:
+    - interface-id
+    - srcaddr
+    - dstaddr
+    - action
+    - log-status
+  field_patterns: {}
+  any_of_fields: []
+
+ocsf:
+  class_uid: 4001
+  class_name: Network Activity
+  category_uid: 4
+  category_name: Network Activity
+  severity_id: 1
+  severity: Informational
+  on_failure:
+    severity_id: 2
+    severity: Low
+
+metadata:
+  product_name: VPC Flow Logs
+  vendor_name: AWS
+
+activity:
+  field: "{action}"
+  map:
+    ACCEPT:
+      uid: 1
+      name: Traffic
+    REJECT:
+      uid: 9
+      name: Refuse
+  default:
+    uid: 0
+    name: Unknown
+
+fields:
+  time: "{start}"          # epoch seconds; mapper normalizes to epoch milliseconds
+  end_time: "{end}"
+  status:
+    enum:
+      evaluate: "{action}"
+      values:
+        ACCEPT: Success
+      other: Failure
+  status_id:
+    enum:
+      evaluate: "{action}"
+      values:
+        ACCEPT: 1
+      other: 2
+  action: "{action}"
+  src_endpoint:
+    ip: "{srcaddr}"
+    port: "{srcport}"
+  dst_endpoint:
+    ip: "{dstaddr}"
+    port: "{dstport}"
+  connection_info:
+    protocol_num: "{protocol}"
+  traffic:
+    bytes: "{bytes}"
+    packets: "{packets}"
+  device:
+    interface_uid: "{interface-id}"
+  cloud:
+    account:
+      uid: "{account-id}"

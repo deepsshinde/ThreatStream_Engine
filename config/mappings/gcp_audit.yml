@@ -1,0 +1,92 @@
+# ---------------------------------------------------------------------------
+# GCP Cloud Audit Logs (Admin Activity) -> OCSF
+# Service account creation -> Account Change (3001); other calls -> API Activity (6003)
+# ---------------------------------------------------------------------------
+source_name: gcp_audit
+description: GCP Cloud Audit Logs (admin activity)
+priority: 40
+
+detection:
+  required_fields:
+    - protoPayload
+    - timestamp
+  field_patterns: {}
+  any_of_fields: []
+
+ocsf:
+  class_uid: 6003
+  class_name: API Activity
+  category_uid: 6
+  category_name: Application Activity
+  severity_id: 1
+  severity: Informational
+  on_failure:
+    severity_id: 2
+    severity: Low
+
+metadata:
+  product_name: Cloud Audit Logs
+  vendor_name: Google Cloud
+
+activity:
+  field: "{protoPayload.methodName}"
+  map:
+    google.iam.admin.v1.CreateServiceAccount:
+      uid: 1
+      name: Create
+      class_uid: 3001
+      class_name: Account Change
+      category_uid: 3
+      category_name: Identity & Access Management
+    google.iam.admin.v1.CreateServiceAccountKey:
+      uid: 1
+      name: Create
+      severity_id: 2
+      severity: Low
+    "*SetIamPolicy":
+      uid: 3
+      name: Update
+      severity_id: 2
+      severity: Low
+    "*.get":
+      uid: 2
+      name: Read
+    "*.list":
+      uid: 2
+      name: Read
+  default:
+    uid: 99
+    name: Other
+
+fields:
+  time: "{timestamp}"
+  # google.rpc.Status code: 0/OK or missing means success; anything else is failure
+  status:
+    enum:
+      evaluate: "{protoPayload.status.code}"
+      values:
+        null: Success
+        0: Success
+      other: Failure
+  status_id:
+    enum:
+      evaluate: "{protoPayload.status.code}"
+      values:
+        null: 1
+        0: 1
+      other: 2
+  status_detail: "{protoPayload.status.message}"
+  actor:
+    user:
+      name: "{protoPayload.authenticationInfo.principalEmail}"
+  src_endpoint:
+    ip: "{protoPayload.requestMetadata.callerIp}"
+  http_request:
+    user_agent: "{protoPayload.requestMetadata.callerSuppliedUserAgent}"
+  api:
+    operation: "{protoPayload.methodName}"
+    service:
+      name: "{protoPayload.serviceName}"
+  cloud:
+    resource:
+      name: "{protoPayload.resourceName}"

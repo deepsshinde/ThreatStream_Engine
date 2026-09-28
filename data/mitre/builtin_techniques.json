@@ -1,0 +1,150 @@
+[
+  {
+    "id": "T1110",
+    "name": "Brute Force",
+    "description": "Adversaries may use brute force techniques to gain access to accounts when passwords are unknown or when passwords are obtained. Attempts against a single account as well as password spraying across many accounts are covered. Repeated failed authentications followed by a success can indicate credential guessing that eventually worked.",
+    "detection": "Monitor authentication logs for high rates of failed logons per account or per source IP, bursts of failures within short windows, and successes following many failures.",
+    "tactics": [
+      "Credential Access"
+    ],
+    "url": "https://attack.mitre.org/techniques/T1110/"
+  },
+  {
+    "id": "T1110.001",
+    "name": "Brute Force: Password Guessing",
+    "description": "Adversaries with no prior password knowledge may attempt to systematically brute force a password for a given account using common or generated values. Volume of failures against a single account is a strong indicator.",
+    "detection": "Alert on repeated logon failures for the same account from the same source; correlate failure count over sliding windows; follow successes preceded by failures.",
+    "tactics": [
+      "Credential Access"
+    ],
+    "url": "https://attack.mitre.org/techniques/T1110/001/"
+  },
+  {
+    "id": "T1110.003",
+    "name": "Brute Force: Password Spraying",
+    "description": "Adversaries may use a small set of commonly used passwords against many different accounts to acquire valid credentials, avoiding per-account lockout thresholds. Look for many distinct usernames failing from one source address.",
+    "detection": "Track distinct-account failure counts per source IP; alert when one source attempts many accounts with few attempts each. Federated/OAuth endpoints are common targets.",
+    "tactics": [
+      "Credential Access"
+    ],
+    "url": "https://attack.mitre.org/techniques/T1110/003/"
+  },
+  {
+    "id": "T1046",
+    "name": "Network Service Discovery",
+    "description": "Adversaries may attempt to identify the network services running on remote systems, such as open ports, using scanning tools. Scans typically appear as short bursts of connection attempts across many destination ports from one source.",
+    "detection": "Monitor network flow/firewall logs for one source contacting many distinct destination ports or hosts within a short time window; especially scans originating from expected-user subnets.",
+    "tactics": [
+      "Discovery"
+    ],
+    "url": "https://attack.mitre.org/techniques/T1046/"
+  },
+  {
+    "id": "T1078",
+    "name": "Valid Accounts",
+    "description": "Adversaries may obtain and abuse credentials of existing accounts as a means of gaining initial access, persistence, privilege escalation, or defense evasion. Compromised accounts may be used to manipulate systems into trusting access or allow bypass of security controls.",
+    "detection": "Monitor account use patterns: logins at unusual hours, from new subnets/geographies, or from unexpected devices, particularly for privileged and service accounts. Correlate authentications immediately following brute-force signals.",
+    "tactics": [
+      "Persistence",
+      "PrivEscalation",
+      "DefenseEvasion",
+      "InitialAccess"
+    ],
+    "url": "https://attack.mitre.org/techniques/T1078/"
+  },
+  {
+    "id": "T1078.004",
+    "name": "Valid Accounts: Cloud Accounts",
+    "description": "Adversaries may obtain and abuse credentials of a cloud account (AWS IAM user/role, Azure AD user, GCP service account) to gain Initial Access. Cloud account credentials abused from anomalous locations or to perform unusual API calls are a key signal.",
+    "detection": "Monitor cloud audit logs (CloudTrail, Activity Logs, Audit Logs) for successful logons from unusual IPs/ASNs, use of long-lived access keys from new devices, and privilege-escalating API calls following login.",
+    "tactics": [
+      "Persistence",
+      "PrivEscalation",
+      "DefenseEvasion",
+      "InitialAccess"
+    ],
+    "url": "https://attack.mitre.org/techniques/T1078/004/"
+  },
+  {
+    "id": "T1098.001",
+    "name": "Account Manipulation: Additional Cloud Credentials",
+    "description": "Adversaries may add adversary-controlled credentials to existing cloud accounts, such as creating new service account keys or SSH keys, to maintain persistence or escalate privileges. CreateServiceAccountKey, CreateAccessKey, and authorized key modification calls are high-risk operations.",
+    "detection": "Alert on key-creation API calls (CreateAccessKey, CreateServiceAccountKey) especially for principals that rarely rotate keys, performed by unexpected actors or from unusual source addresses.",
+    "tactics": [
+      "Persistence",
+      "PrivEscalation"
+    ],
+    "url": "https://attack.mitre.org/techniques/T1098/001/"
+  },
+  {
+    "id": "T1098.003",
+    "name": "Account Manipulation: Additional Cloud Roles",
+    "description": "Adversaries may assign additional roles or permissions to cloud accounts they control to gain escalated privileges or persistent power. Look for PutRolePolicy, AttachRolePolicy, SetIamPolicy, UpdateUserRole-like operations and permission-boundary changes.",
+    "detection": "Audit role/policy change calls; alert when non-admin principals perform policy attachment, when high-privilege roles are granted to low-trust identities, or when permission boundaries are modified.",
+    "tactics": [
+      "Persistence",
+      "PrivEscalation"
+    ],
+    "url": "https://attack.mitre.org/techniques/T1098/003/"
+  },
+  {
+    "id": "T1136",
+    "name": "Create Account",
+    "description": "Adversaries may create accounts to maintain access to victim systems. Account creation of any kind - host, cloud tenant, directory - should be monitored, especially on systems where it is not part of normal operations.",
+    "detection": "Monitor account creation events (Windows Event 4720, CloudTrail CreateUser, directory logs); correlate creators with their normal duties; alert on creation outside change windows.",
+    "tactics": [
+      "Persistence"
+    ],
+    "url": "https://attack.mitre.org/techniques/T1136/"
+  },
+  {
+    "id": "T1136.003",
+    "name": "Create Account: Cloud Account",
+    "description": "Adversaries may create a cloud account to maintain access to victim systems. In multi-cloud environments, creation of new IAM users and service accounts by non-baseline actors is a persistence marker.",
+    "detection": "Alert on cloud user/service-account creation APIs (CreateUser, CreateServiceAccount) from unexpected sources, unusual hours, or principals without admin roles; watch for immediate credential generation afterwards.",
+    "tactics": [
+      "Persistence"
+    ],
+    "url": "https://attack.mitre.org/techniques/T1136/003/"
+  },
+  {
+    "id": "T1562.001",
+    "name": "Impair Defenses: Disable or Modify Tools",
+    "description": "Adversaries may disable or modify defensive tools - antivirus, EDR, security services, log forwarding - to avoid detection. Stopping security services or deleting security configurations weakens visibility across the environment.",
+    "detection": "Monitor security service stop events (Windows Event 7036 on Defender/AV services), log service termination, disabling of audit policies, and deletion or modification of trail/SINK/forwarder configurations in cloud control planes.",
+    "tactics": [
+      "DefenseEvasion"
+    ],
+    "url": "https://attack.mitre.org/techniques/T1562/001/"
+  },
+  {
+    "id": "T1530",
+    "name": "Data from Cloud Storage Object",
+    "description": "Adversaries may access data from improperly secured cloud storage - S3 buckets, Blob containers, GCS buckets - for collection or exfiltration. Publicly exposed storage accessed by unfamiliar identities is a high-value signal.",
+    "detection": "Monitor cloud storage access logs for anonymous principals, unusual volume of object reads, first-time access from strange networks, and access following policy misconfiguration changes.",
+    "tactics": [
+      "Collection"
+    ],
+    "url": "https://attack.mitre.org/techniques/T1530/"
+  },
+  {
+    "id": "T1595.002",
+    "name": "Active Scanning: Vulnerability Scanning",
+    "description": "Adversaries may scan victims to identify vulnerabilities prior to, or during, exploitation. Common from automated tooling signatures and often precedes exploitation traffic against open network services.",
+    "detection": "Look for scanner user agents, sequential host/port sweeps, kali-branded clients, and systematic request patterns across endpoints in network and application logs.",
+    "tactics": [
+      "Reconnaissance"
+    ],
+    "url": "https://attack.mitre.org/techniques/T1595/002/"
+  },
+  {
+    "id": "T1087.004",
+    "name": "Account Discovery: Cloud Account",
+    "description": "Adversaries may attempt to enumerate cloud accounts, such as listing IAM users or service accounts, to learn about the environment and identify additional targets. ListUsers, ListServiceAccounts and similar read calls are often early intrusion markers.",
+    "detection": "Alert on account-enumeration API calls from identities that do not normally perform them, bursts of read/list calls across many account objects, and enumeration soon after initial login.",
+    "tactics": [
+      "Discovery"
+    ],
+    "url": "https://attack.mitre.org/techniques/T1087/004/"
+  }
+]

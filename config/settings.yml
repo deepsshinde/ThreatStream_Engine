@@ -1,0 +1,67 @@
+# ThreatStream Engine - pipeline configuration
+project: threatstream-engine
+
+paths:
+  # Directory with per-source YAML mapping configs
+  mappings_dir: config/mappings
+  # Normalized OCSF events land here, partitioned by event date
+  output_dir: data/output
+  # Event-level failures (ingestion/detection/mapping/validation) land here
+  errors_dir: data/output/_errors
+  # One JSON line per pipeline run
+  runs_dir: data/output/_runs
+  # Persisted deduplication state
+  state_dir: data/state
+
+pipeline:
+  deduplication:
+    enabled: true
+    window_minutes: 60
+    persist: true
+  storage:
+    format: jsonl # normalized events per OCSF class, date-partitioned
+
+# PostgreSQL is OPTIONAL. When disabled (or unreachable), the pipeline keeps
+# working with file storage only and logs a warning. Docker Compose provides
+# a matching local database: `docker compose up -d postgres`.
+postgres:
+  enabled: ${POSTGRES_ENABLED:-false}
+  host: ${POSTGRES_HOST:-localhost}
+  port: ${POSTGRES_PORT:-5432}
+  dbname: ${POSTGRES_DB:-threatstream}
+  user: ${POSTGRES_USER:-threatstream}
+  password: ${POSTGRES_PASSWORD:-threatstream}
+  # Full DSN override (e.g. unix sockets, sslmode): wins over host/port/...
+  conninfo: ${POSTGRES_CONNINFO:-}
+  connect_timeout: 5
+
+# Kafka streaming ingestion (Phase 3). Broker provided by docker-compose.
+kafka:
+  enabled: ${KAFKA_ENABLED:-false}
+  bootstrap_servers: ${KAFKA_BOOTSTRAP_SERVERS:-localhost:9092}
+  topic: ${KAFKA_TOPIC:-security-logs}
+  group_id: ${KAFKA_GROUP_ID:-threatstream-consumer}
+  auto_offset_reset: earliest
+
+# Security analysis: correlation engine + RAG + LLM findings (Phase 6).
+# Works without an LLM or MITRE index (deterministic fallback), just with
+# less context; see README for honest degradations.
+analysis:
+  enabled: true
+  llm: auto          # auto | ollama | fallback
+  max_candidates: 200
+
+rag:
+  data_dir: data/mitre
+  top_k: 5
+  similarity_threshold: 0.35
+  embedder: auto     # auto | sentence-transformers | hashing
+
+ollama:
+  base_url: ${OLLAMA_BASE_URL:-http://localhost:11434}
+  model: ${OLLAMA_MODEL:-llama3.2:3b}
+  timeout_sec: 30
+
+logging:
+  level: INFO
+  format: "%(asctime)s %(levelname)-5s %(name)s | %(message)s"

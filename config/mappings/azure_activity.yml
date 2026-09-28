@@ -1,0 +1,91 @@
+# ---------------------------------------------------------------------------
+# Azure Activity Log -> OCSF
+# Role assignments -> Account Change (3001); other operations -> API Activity (6003)
+# ---------------------------------------------------------------------------
+source_name: azure_activity
+description: Azure Activity Log (management plane)
+priority: 30
+
+detection:
+  required_fields:
+    - operationName
+    - resultType
+    - correlationId
+  field_patterns: {}
+  any_of_fields: []
+
+ocsf:
+  class_uid: 6003
+  class_name: API Activity
+  category_uid: 6
+  category_name: Application Activity
+  severity_id: 1
+  severity: Informational
+  on_failure:
+    severity_id: 2
+    severity: Low
+
+metadata:
+  product_name: Azure Activity Log
+  vendor_name: Microsoft
+
+activity:
+  field: "{operationName}"
+  map:
+    "*/ROLEASSIGNMENTS/WRITE":
+      uid: 1
+      name: Create
+      class_uid: 3001
+      class_name: Account Change
+      category_uid: 3
+      category_name: Identity & Access Management
+      severity_id: 2
+      severity: Low
+    "*/DELETE":
+      uid: 4
+      name: Delete
+    "*/WRITE":
+      uid: 3
+      name: Update
+    "*/READ":
+      uid: 2
+      name: Read
+    "*/ACTION":
+      uid: 2
+      name: Read
+  default:
+    uid: 99
+    name: Other
+
+fields:
+  time: "{time}"
+  status:
+    enum:
+      evaluate: "{resultType}"
+      values:
+        Success: Success
+        Started: Success
+        Accepted: Success
+        Created: Success
+      other: Failure
+  status_id:
+    enum:
+      evaluate: "{resultType}"
+      values:
+        Success: 1
+        Started: 1
+        Accepted: 1
+        Created: 1
+      other: 2
+  status_detail: "{resultSignature}"
+  actor:
+    user:
+      name: "{caller}"
+      uid: "{identity.authorization.evidence.principalId}"
+  src_endpoint:
+    ip: "{callerIpAddress}"
+  api:
+    operation: "{operationName}"
+  cloud:
+    resource:
+      uid: "{resourceId}"

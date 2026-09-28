@@ -1,0 +1,67 @@
+# ThreatStream Engine - local infrastructure
+#
+#   cp .env.example .env
+#   docker compose up -d postgres kafka
+#
+# PostgreSQL : 5432 (enable with POSTGRES_ENABLED=true in .env)
+# Kafka      : 9092, KRaft single-broker, topic auto-created
+#
+# psql "host=localhost dbname=threatstream user=threatstream password=threatstream"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: threatstream-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-threatstream}
+      POSTGRES_USER: ${POSTGRES_USER:-threatstream}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-threatstream}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+    networks: [threatstream]
+
+  kafka:
+    image: apache/kafka:3.8.1
+    container_name: threatstream-kafka
+    restart: unless-stopped
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      CLUSTER_ID: ${KAFKA_CLUSTER_ID:-MkU3OEVBNTcwNTJENDM2Qk}
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafkadata:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c '/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1'"]
+      interval: 5s
+      timeout: 5s
+      retries: 24
+      start_period: 10s
+    networks: [threatstream]
+
+volumes:
+  pgdata:
+  kafkadata:
+
+networks:
+  threatstream:
+    name: threatstream

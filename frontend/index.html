@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ThreatStream Security Analytics</title>
+<style>
+  :root {
+    --bg: #0d1420; --panel: #141e30; --panel2: #182439; --line: #263650;
+    --ink: #dbe6f3; --dim: #8aa0bd; --accent: #4da3ff; --ok: #35c48d;
+    --warn: #e0a93e; --bad: #e5534b; --mal: #ff5252; --sus: #ffb020; --ben: #47cf8b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--ink); }
+  header { padding: 14px 22px; background: var(--panel); border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 14px; }
+  header .logo { font-weight: 700; font-size: 17px; letter-spacing: .4px; }
+  header .logo span { color: var(--accent); }
+  header .badge { font-size: 11px; color: var(--dim); border: 1px solid var(--line); border-radius: 20px; padding: 3px 10px; }
+  header .badge.ok { color: var(--ok); border-color: var(--ok); }
+  header .badge.warn { color: var(--warn); border-color: var(--warn); }
+  nav { display: flex; gap: 4px; margin-left: 24px; }
+  nav a { color: var(--dim); text-decoration: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; }
+  nav a.active { color: var(--ink); background: var(--panel2); }
+  main { padding: 20px 22px; max-width: 1280px; margin: 0 auto; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .card .num { font-size: 26px; font-weight: 700; }
+  .card .lbl { color: var(--dim); font-size: 12px; text-transform: uppercase; letter-spacing: .6px; margin-top: 2px; }
+  .card.mal .num { color: var(--mal); } .card.sus .num { color: var(--sus); } .card.ben .num { color: var(--ben); }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 18px; }
+  .panel h2 { margin: 0 0 12px; font-size: 15px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--dim); font-size: 11px; text-transform: uppercase; letter-spacing: .6px; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--panel2); }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .pill.malicious { background: #3a1d1d; color: var(--mal); }
+  .pill.suspicious { background: #3a2f16; color: var(--sus); }
+  .pill.benign { background: #153829; color: var(--ben); }
+  .pill.unknown { background: var(--panel2); color: var(--dim); }
+  .bar { height: 7px; border-radius: 4px; background: #223tuck; background: #202e44; overflow: hidden; min-width: 120px; }
+  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--ok), var(--warn), var(--bad)); }
+  .mono { font-family: "Cascadia Code", Consolas, monospace; font-size: 12px; }
+  .dim { color: var(--dim); }
+  select, input, textarea, button { font: inherit; color: var(--ink); background: var(--panel2); border: 1px solid var(--line); border-radius: 7px; padding: 7px 10px; }
+  button { background: var(--accent); color: #fff; border: none; cursor: pointer; font-weight: 600; }
+  button.ghost { background: var(--panel2); border: 1px solid var(--line); font-weight: 400; }
+  textarea { width: 100%; min-height: 170px; font-family: Consolas, monospace; font-size: 12px; }
+  .filters { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 900px) { .grid2 { grid-template-columns: 1fr; } }
+  .tech { display: inline-block; background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; font-size: 11px; margin: 2px; }
+  .sectx { color: var(--dim); white-space: pre-wrap; }
+  footer { color: var(--dim); font-size: 12px; padding: 12px 22px 28px; }
+  .kicker { font-size: 11px; letter-spacing: 1px; color: var(--dim); text-transform: uppercase; margin: 0 0 4px; }
+  a.tec { color: var(--accent); text-decoration: none; }
+  .verdict-banner { border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; border: 1px solid var(--line); }
+  .verdict-banner h3 { margin: 0 0 4px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Threat<span>Stream</span> Security Analytics</div>
+  <span class="badge" id="backend">connecting…</span>
+  <span class="badge" id="engine">analysis: …</span>
+  <nav>
+    <a id="tab-overview" class="active" onclick="show('overview')">Overview</a>
+    <a id="tab-findings" onclick="show('findings')">Findings</a>
+    <a id="tab-events" onclick="show('events')">Events</a>
+    <a id="tab-analyze" onclick="show('analyze')">Analyze</a>
+    <a id="tab-sources" onclick="show('sources')">Sources</a>
+  </nav>
+</header>
+<main>
+  <!-- OVERVIEW -->
+  <section id="sec-overview">
+    <div class="cards" id="cards"></div>
+    <div class="grid2">
+      <div class="panel"><h2>Events by source</h2><div id="by-source"></div></div>
+      <div class="panel"><h2>Top MITRE techniques seen</h2><div id="by-tech"></div></div>
+    </div>
+    <div class="panel"><h2>Events by OCSF class</h2><div id="by-class"></div></div>
+  </section>
+
+  <!-- FINDINGS -->
+  <section id="sec-findings" hidden>
+    <div class="panel">
+      <h2>Security findings</h2>
+      <div class="filters">
+        <select id="f-verdict" onchange="loadFindings()">
+          <option value="">all verdicts</option><option>malicious</option><option>suspicious</option><option>benign</option>
+        </select>
+        <input id="f-risk" type="number" min="0" max="100" placeholder="min risk" style="width:110px" onchange="loadFindings()"/>
+        <button class="ghost" onclick="loadFindings()">Refresh</button>
+      </div>
+      <table><thead><tr><th>Risk</th><th>Verdict</th><th>Summary</th><th>Signals</th><th>Techniques</th><th>Engine</th></tr></thead><tbody id="findings-body"></tbody></table>
+    </div>
+  </section>
+
+  <!-- EVENTS -->
+  <section id="sec-events" hidden>
+    <div class="panel">
+      <h2>Normalized events (OCSF)</h2>
+      <div class="filters">
+        <select id="e-source" onchange="loadEvents()"><option value="">all sources</option></select>
+        <select id="e-class" onchange="loadEvents()"><option value="">all classes</option></select>
+        <select id="e-status" onchange="loadEvents()"><option value="">all statuses</option><option>Success</option><option>Failure</option></select>
+        <input id="e-user" placeholder="actor user" onchange="loadEvents()" style="width:140px"/>
+        <input id="e-ip" placeholder="src ip" onchange="loadEvents()" style="width:130px"/>
+        <button class="ghost" onclick="loadEvents()">Refresh</button>
+      </div>
+      <div class="dim" id="events-total" style="margin-bottom:8px"></div>
+      <table><thead><tr><th>Time</th><th>Class</th><th>Activity</th><th>Status</th><th>User</th><th>Src IP</th><th>Source</th></tr></thead><tbody id="events-body"></tbody></table>
+    </div>
+  </section>
+
+  <!-- ANALYZE -->
+  <section id="sec-analyze" hidden>
+    <div class="grid2">
+      <div class="panel">
+        <h2>On-demand analysis</h2>
+        <p class="dim">Paste any raw vendor log event. ThreatStream detects the source, normalizes to OCSF, correlates against stored history, retrieves MITRE context, and produces a structured verdict (engine chain: Ollama LLM → deterministic fallback). The event is not persisted.</p>
+        <textarea id="a-event">{"eventSource": "signin.amazonaws.com", "eventName": "ConsoleLogin", "eventTime": "2026-09-24T12:01:44Z", "awsRegion": "us-east-1", "userIdentity": {"userName": "finance_admin"}, "sourceIPAddress": "203.0.113.50", "userAgent": "stratus-red-team/1.4.1", "responseElements": {"ConsoleLogin": "Failure"}}</textarea><br/><br/>
+        <button onclick="runAnalyze()">Analyze</button>
+        <span class="dim" id="a-status" style="margin-left:10px"></span>
+      </div>
+      <div class="panel">
+        <h2>Result</h2>
+        <div id="a-result" class="sectx">Run an analysis to see the structured verdict.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOURCES -->
+  <section id="sec-sources" hidden>
+    <div class="panel">
+      <h2>Configured log sources (YAML-driven)</h2>
+      <table><thead><tr><th>Source</th><th>Priority</th><th>Detection rule</th><th>OCSF class</th></tr></thead><tbody id="sources-body"></tbody></table>
+      <p class="dim">Each entry comes from <span class="mono">config/mappings/&lt;source&gt;.yml</span> — add a file, restart, done.</p>
+    </div>
+  </section>
+</main>
+<footer>
+  ThreatStream Security Engine · deterministic correlation + RAG-grounded AI-assisted analysis ·
+  <span id="foot"></span>
+</footer>
+
+<script>
+const api = (p) => fetch('/api/v1' + p).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function show(name) {
+  for (const n of ['overview','findings','events','analyze','sources'])
+    document.getElementById('sec-' + n).hidden = n !== name;
+  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('active', a.id === 'tab-' + name));
+  if (name === 'findings') loadFindings();
+  if (name === 'events') loadEvents();
+  if (name === 'sources') loadSources();
+}
+
+const bars = (rows) => {
+  const max = Math.max(1, ...rows.map(r => r.count));
+  return rows.map(r =>
+    `<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px">
+       <div style="width:150px" title="${esc(r.key)}">${esc(r.key)}</div>
+       <div class="bar" style="flex:1"><i style="width:${(100*r.count/max).toFixed(1)}%"></i></div>
+       <div class="dim" style="width:44px;text-align:right">${r.count}</div></div>`).join('');
+};
+
+async function loadOverview() {
+  const stats = await api('/stats');
+  const f = stats.findings || {};
+  const verdicts = Object.fromEntries((f.by_verdict || []).map(r => [r.key, r.count]));
+  document.getElementById('cards').innerHTML = `
+    <div class="card"><div class="num">${stats.totals.events}</div><div class="lbl">events</div></div>
+    <div class="card"><div class="num">${f.total || 0}</div><div class="lbl">findings</div></div>
+    <div class="card mal"><div class="num">${verdicts.malicious || 0}</div><div class="lbl">malicious</div></div>
+    <div class="card sus"><div class="num">${verdicts.suspicious || 0}</div><div class="lbl">suspicious</div></div>
+    <div class="card ben"><div class="num">${verdicts.benign || 0}</div><div class="lbl">benign</div></div>`;
+  document.getElementById('by-source').innerHTML = bars(stats.by_source || []);
+  document.getElementById('by-class').innerHTML = bars((stats.by_class || []).slice(0, 10));
+  document.getElementById('by-tech').innerHTML = (f.top_techniques || []).length
+    ? (f.top_techniques || []).map(t => `<span class="tech">${esc(t.key)} <span class="dim">×${t.count}</span></span>`).join('')
+    : '<span class="dim">No findings yet — run the pipeline to generate analysis.</span>';
+}
+
+async function loadFindings() {
+  const v = document.getElementById('f-verdict').value;
+  const r = document.getElementById('f-risk').value;
+  const q = `?limit=50${v ? '&verdict=' + v : ''}${r ? '&min_risk=' + r : ''}`;
+  const data = await api('/findings' + q);
+  document.getElementById('findings-body').innerHTML = (data.items || []).map(x => `
+    <tr>
+      <td><b style="color:${x.risk_score>=70?'var(--mal)':x.risk_score>=40?'var(--sus)':'var(--ben)'}">${x.risk_score}</b></td>
+      <td><span class="pill ${esc(x.verdict)}">${esc(x.verdict)}</span></td>
+      <td>${esc(x.summary)}</td>
+      <td>${(x.signals||[]).filter(s=>s.rule_id).map(s=>`<span class="tech">${esc(s.rule_id)}</span>`).join('') || '<span class="dim">—</span>'}</td>
+      <td>${(x.mitre_techniques||[]).map(t=>`<span class="tech">${esc(t.id)}</span>`).join('') || '<span class="dim">—</span>'}</td>
+      <td class="dim">${x.llm_used ? 'llm' : 'deterministic'}</td>
+    </tr>`).join('') || '<tr><td colspan="6" class="dim">No findings.</td></tr>';
+}
+
+async function loadEvents() {
+  const p = new URLSearchParams({ limit: 100 });
+  const s = document.getElementById('e-source').value, c = document.getElementById('e-class').value,
+        st = document.getElementById('e-status').value, u = document.getElementById('e-user').value,
+        ip = document.getElementById('e-ip').value;
+  if (s) p.set('source_name', s); if (c) p.set('class_name', c); if (st) p.set('status', st);
+  if (u) p.set('actor_user', u); if (ip) p.set('src_ip', ip);
+  const data = await api('/events?' + p);
+  document.getElementById('events-total').textContent = `${data.total} matching event(s)`;
+  document.getElementById('events-body').innerHTML = (data.items || []).map(e => `
+    <tr>
+      <td class="mono">${e.time ? new Date(Number(e.time)).toISOString().slice(0,19).replace('T',' ') : '—'}</td>
+      <td>${esc(e.class_name)}</td><td class="dim">${esc(e.activity_name)}</td>
+      <td style="color:${e.status==='Failure'?'var(--sus)':'var(--ben)'}">${esc(e.status)}</td>
+      <td>${esc(e.actor_user || '—')}</td><td class="mono">${esc(e.src_ip || '—')}</td>
+      <td class="dim">${esc(e.source_name)}</td>
+    </tr>`).join('') || '<tr><td colspan="7" class="dim">No events.</td></tr>';
+}
+
+async function loadSources() {
+  const data = await api('/sources');
+  const sel = document.getElementById('e-source');
+  if (sel.options.length <= 1) data.forEach(x => sel.add(new Option(x.source, x.source)));
+  document.getElementById('sources-body').innerHTML = data.map(x => `
+    <tr><td><b>${esc(x.source)}</b></td><td class="dim">${x.priority}</td>
+    <td class="mono">requires: ${esc((x.detection.required_fields||[]).join(', '))}${
+      Object.keys(x.detection.field_patterns||{}).length ? ' · patterns: ' + esc(JSON.stringify(x.detection.field_patterns)) : ''}</td>
+    <td>${esc(x.default_class || '—')}</td></tr>`).join('');
+}
+
+async function runAnalyze() {
+  const status = document.getElementById('a-status');
+  const out = document.getElementById('a-result');
+  let eventObj;
+  try { eventObj = JSON.parse(document.getElementById('a-event').value); }
+  catch (e) { status.textContent = 'Invalid JSON: ' + e.message; return; }
+  status.textContent = 'analyzing…';
+  out.textContent = '';
+  try {
+    const r = await fetch('/api/v1/analyze', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({event: eventObj}) });
+    const j = await r.json();
+    status.textContent = '';
+    const a = j.analysis || {};
+    const color = a.verdict==='malicious'?'var(--mal)':a.verdict==='suspicious'?'var(--sus)':'var(--ben)';
+    out.innerHTML = `
+      <div class="verdict-banner" style="border-color:${color}">
+        <div class="kicker">verdict · via ${esc(j.engine)} engine</div>
+        <h3 style="color:${color}">${esc(a.verdict||'?')} — risk ${a.risk_score}</h3>
+        <div>${esc(a.summary||'')}</div>
+      </div>
+      <div class="kicker">deterministic signals attached</div>
+      <div>${(j.signals||[]).map(s=>`<span class="tech">${esc(s.rule_id)} (risk ${s.risk_score})</span>`).join(' ') || '<span class="dim">none</span>'}</div><br>
+      <div class="kicker">RAG retrieved MITRE context</div>
+      <div>${(j.retrieval && j.retrieval.techniques||[]).map(t=>`<span class="tech">${esc(t.id)} ${esc(t.name)} <span class="dim">${t.score.toFixed(2)}</span></span>`).join(' ') || '<span class="dim">unavailable</span>'}</div><br>
+      <div class="kicker">techniques (engine)</div>
+      <div>${(a.techniques||[]).map(t=>`<span class="tech">${esc(t.id)} ${esc(t.name)}</span>`).join(' ') || '<span class="dim">none</span>'}</div><br>
+      <div class="kicker">evidence</div><ul>${(a.evidence||[]).map(e=>`<li>${esc(e)}</li>`).join('')}</ul>
+      <div class="kicker">recommendations</div><ul>${(a.recommendations||[]).map(e=>`<li>${esc(e)}</li>`).join('')}</ul>
+      ${j.llm_error && a ? `<div class="kicker" style="color:var(--sus)">llm error (fell back):</div><div class="dim mono">${esc(j.llm_error)}</div>` : ''}`;
+  } catch (e) { status.textContent = 'error'; out.textContent = String(e); }
+}
+
+(async function init() {
+  try {
+    const h = await api('/health');
+    const b = document.getElementById('backend');
+    b.textContent = h.backend + (h.status === 'degraded' ? ' (degraded)' : '');
+    b.classList.add(h.status === 'ok' ? 'ok' : 'warn');
+    document.getElementById('engine').textContent = 'analysis: ' + (h.analysis_enabled ? h.analysis_mode : 'off');
+    document.getElementById('foot').textContent = `mitre index: ${h.mitre_index?.available ? 'built' : 'not built'} · api v1`;
+    await loadOverview();
+  } catch (e) {
+    document.getElementById('backend').textContent = 'API unreachable: ' + e;
+  }
+})();
+</script>
+</body>
+</html>

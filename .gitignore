@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Environment / secrets
+.env
+
+# Generated pipeline data (keep the directories, not the data)
+data/output/
+data/state/
+data/raw/*
+!data/raw/.gitkeep
+!data/.gitkeep
+!data/output_/.gitkeep
+
+# Generated MITRE index (Phase 5) - rebuilt with python -m app.cli build-mitre-index,
+# but keep the curated builtin subset + metadata in the repo
+data/mitre/index.faiss
+data/mitre/vectors.npy
+data/mitre/techniques.index*
+data/mitre/index_meta.json
+data/mitre/*_stix*.json
+data/mitre/enterprise-attack*.json
+data/mitre/bundle*.json
+
+# Spark outputs & spark scratch
+analytics_output/
+spark-warehouse/
+metastore_db/
+derby.log
+
+# Kafka/compose runtime dumps if ever run with bind mounts
+kafka_data/
+
+# big runtime leftovers
+logs/
+
+# Jupyter/play
+playground/
+*.ipynb_checkpoints/
+
+# OS/editor
+.DS_Store
+.idea/
+.vscode/

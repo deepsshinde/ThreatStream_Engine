@@ -1,0 +1,87 @@
+# ---------------------------------------------------------------------------
+# Palo Alto Networks firewall TRAFFIC logs (JSON export) -> OCSF
+# All records -> Network Activity (4001)
+# ---------------------------------------------------------------------------
+source_name: paloalto_firewall
+description: Palo Alto Networks PAN-OS traffic logs
+priority: 10
+
+detection:
+  required_fields:
+    - type
+    - action
+    - src
+    - dst
+    - time_generated
+  field_patterns:
+    type: "TRAFFIC"
+  any_of_fields: []
+
+ocsf:
+  class_uid: 4001
+  class_name: Network Activity
+  category_uid: 4
+  category_name: Network Activity
+  severity_id: 1
+  severity: Informational
+  on_failure:
+    severity_id: 2
+    severity: Low
+
+metadata:
+  product_name: PAN-OS
+  vendor_name: Palo Alto Networks
+
+activity:
+  field: "{action}"
+  map:
+    allow:
+      uid: 1
+      name: Traffic
+    deny:
+      uid: 9
+      name: Refuse
+    drop:
+      uid: 9
+      name: Refuse
+  default:
+    uid: 0
+    name: Unknown
+
+fields:
+  # Real PAN-OS timestamp format: "2026/09/24 09:18:12" (firewall local time, UTC here)
+  time:
+    value: "{time_generated}"
+    format: "%Y/%m/%d %H:%M:%S"
+  status:
+    enum:
+      evaluate: "{action}"
+      values:
+        allow: Success
+      other: Failure
+  status_id:
+    enum:
+      evaluate: "{action}"
+      values:
+        allow: 1
+      other: 2
+  action: "{action}"
+  src_endpoint:
+    ip: "{src}"
+    port: "{sport}"
+  dst_endpoint:
+    ip: "{dst}"
+    port: "{dport}"
+  connection_info:
+    protocol_name: "{proto}"
+    boundary: "{subtype}"
+  traffic:
+    bytes: "{bytes}"
+    packets: "{pkts}"
+  app:
+    name: "{app}"
+  actor:
+    user:
+      name: "{srcuser}"
+  device:
+    uid: "{serial}"

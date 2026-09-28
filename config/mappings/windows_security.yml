@@ -1,0 +1,79 @@
+# ---------------------------------------------------------------------------
+# Windows Security Event Log (JSON export) -> OCSF
+# 4624/4625 -> Authentication (3002); 4720 -> Account Change (3001)
+# ---------------------------------------------------------------------------
+source_name: windows_security
+description: Windows Security Event Log events (4624, 4625, 4634, 4720, ...)
+priority: 50
+
+detection:
+  required_fields:
+    - EventID
+    - TimeCreated
+    - EventData
+  field_patterns: {}
+  any_of_fields: []
+
+ocsf:
+  class_uid: 3002
+  class_name: Authentication
+  category_uid: 3
+  category_name: Identity & Access Management
+  severity_id: 1
+  severity: Informational
+  on_failure:
+    severity_id: 3
+    severity: Medium
+
+metadata:
+  product_name: Windows Security Event Log
+  vendor_name: Microsoft
+
+activity:
+  field: "{EventID}"
+  map:
+    4624:
+      uid: 1
+      name: Logon
+    4625:
+      uid: 1
+      name: Logon
+    4634:
+      uid: 2
+      name: Logoff
+    4720:
+      uid: 1
+      name: Create
+      class_uid: 3001
+      class_name: Account Change
+  default:
+    uid: 99
+    name: Other
+
+fields:
+  time: "{TimeCreated}"
+  # Successful logons have no Status (or 0x0); failures carry an NTSTATUS code
+  status:
+    enum:
+      evaluate: "{EventData.Status}"
+      values:
+        null: Success
+        "0x0": Success
+      other: Failure
+  status_id:
+    enum:
+      evaluate: "{EventData.Status}"
+      values:
+        null: 1
+        "0x0": 1
+      other: 2
+  status_code: "{EventData.Status}"
+  actor:
+    user:
+      name: "{EventData.TargetUserName}"
+      domain: "{EventData.TargetDomainName}"
+  src_endpoint:
+    ip: "{EventData.IpAddress}"
+  device:
+    hostname: "{Computer}"
+  logon_type: "{EventData.LogonType}"

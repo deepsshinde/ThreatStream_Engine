@@ -1,0 +1,22 @@
+# Phase 1-2 core (normalization pipeline + CLI + PostgreSQL)
+PyYAML>=6.0,<7.0
+psycopg[binary]>=3.1,<4.0
+
+# Phase 3 (Kafka streaming)
+kafka-python>=2.0.2
+
+# Phase 4 (PySpark analytics) - requires Java 11+ for spark-submit,
+# but import-only paths (tests, CLI analytics command) handle missing Java gracefully
+pyspark>=3.5,<3.6
+
+# Phase 5-6 (MITRE RAG + embeddings + local LLM client)
+numpy>=1.26,<3
+faiss-cpu>=1.7.4
+sentence-transformers>=2.2
+pydantic>=2.6
+
+# Phase 7 (API)
+fastapi>=0.110
+uvicorn[standard]>=0.29
+
+# Development / test requirements -> requirements-dev.txt

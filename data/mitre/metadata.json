@@ -1,0 +1,8 @@
+{
+ "embedder_backend": "sentence-transformers",
+ "embedder_model": "sentence-transformers/all-MiniLM-L6-v2",
+ "dim": 384,
+ "count": 697,
+ "source": "stix:https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json",
+ "index_file": "index.faiss"
+}

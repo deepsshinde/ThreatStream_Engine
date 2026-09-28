@@ -1,0 +1,66 @@
+[
+  {
+    "EventID": 4625,
+    "TimeCreated": "2026-09-24T09:11:00Z",
+    "Computer": "WIN-DC01.corp.local",
+    "Channel": "Security",
+    "EventData": {"TargetUserName": "asmith", "TargetDomainName": "CORP", "IpAddress": "10.1.2.34", "IpPort": "51234", "LogonType": "3", "Status": "0xC000006A", "SubStatus": "0x0", "WorkstationName": "WS-1042"},
+    "Message": "An account failed to log on."
+  },
+  {
+    "EventID": 4625,
+    "TimeCreated": "2026-09-24T09:11:30Z",
+    "Computer": "WIN-DC01.corp.local",
+    "Channel": "Security",
+    "EventData": {"TargetUserName": "asmith", "TargetDomainName": "CORP", "IpAddress": "10.1.2.34", "IpPort": "51235", "LogonType": "3", "Status": "0xC000006A", "SubStatus": "0x0", "WorkstationName": "WS-1042"},
+    "Message": "An account failed to log on."
+  },
+  {
+    "EventID": 4625,
+    "TimeCreated": "2026-09-24T09:12:01Z",
+    "Computer": "WIN-DC01.corp.local",
+    "Channel": "Security",
+    "EventData": {"TargetUserName": "asmith", "TargetDomainName": "CORP", "IpAddress": "10.1.2.34", "IpPort": "51236", "LogonType": "3", "Status": "0xC000006A", "SubStatus": "0x0", "WorkstationName": "WS-1042"},
+    "Message": "An account failed to log on."
+  },
+  {
+    "EventID": 4624,
+    "TimeCreated": "2026-09-24T09:12:40Z",
+    "Computer": "WIN-DC01.corp.local",
+    "Channel": "Security",
+    "EventData": {"TargetUserName": "asmith", "TargetDomainName": "CORP", "IpAddress": "10.1.2.34", "IpPort": "51240", "LogonType": "3", "WorkstationName": "WS-1042"},
+    "Message": "An account was successfully logged on."
+  },
+  {
+    "EventID": 4720,
+    "TimeCreated": "2026-09-24T09:13:40Z",
+    "Computer": "WIN-DC01.corp.local",
+    "Channel": "Security",
+    "EventData": {"TargetUserName": "newhire.temp", "TargetDomainName": "CORP", "SubjectUserName": "admin.jones", "SubjectDomainName": "CORP", "LogonType": "-"},
+    "Message": "A user account was created."
+  },
+  {
+    "EventID": 4624,
+    "TimeCreated": "2026-09-24T09:14:10Z",
+    "Computer": "SQL-PROD-02.corp.local",
+    "Channel": "Security",
+    "EventData": {"TargetUserName": "svc-backup", "TargetDomainName": "CORP", "IpAddress": "10.1.9.8", "IpPort": "22110", "LogonType": "3", "WorkstationName": "BACKUP-SRV"},
+    "Message": "An account was successfully logged on."
+  },
+  {
+    "EventID": 4634,
+    "TimeCreated": "2026-09-24T09:15:00Z",
+    "Computer": "WIN-DC01.corp.local",
+    "Channel": "Security",
+    "EventData": {"TargetUserName": "asmith", "TargetDomainName": "CORP", "LogonType": "3"},
+    "Message": "An account was logged off."
+  },
+  {
+    "EventID": 4625,
+    "TimeCreated": "2026-09-24T09:16:25Z",
+    "Computer": "WS-1077.corp.local",
+    "Channel": "Security",
+    "EventData": {"TargetUserName": "jdoe", "TargetDomainName": "CORP", "IpAddress": "10.1.4.55", "IpPort": "61444", "LogonType": "2", "Status": "0xC0000071", "SubStatus": "0x0", "WorkstationName": "WS-1077"},
+    "Message": "An account failed to log on."
+  }
+]

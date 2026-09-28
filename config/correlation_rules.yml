@@ -1,0 +1,57 @@
+# ThreatStream correlation rules - evaluated by app/processing/correlation.py
+#
+# A rule has: group_by (identity of the tracked entity), window, and ordered
+# steps. Steps are matched against normalized OCSF events with simple
+# `key: value` filters (dot paths) and/explicitly support:
+#   min_count    : at least N matching events
+#   distinct     : path whose distinct values must reach min_distinct
+# Sequence rules (steps in order) require later steps to happen *after*
+# earlier steps within the same window.
+#
+# Rules are DATA, not code - add new detections without touching Python.
+
+rules:
+  - id: brute-force-then-success
+    description: "Repeated failed logons followed by a successful logon - possible brute force"
+    severity: High
+    risk_score: 75
+    mitre_techniques:
+      - {id: T1110, name: Brute Force}
+      - {id: T1078, name: Valid Accounts}
+    group_by: [actor.user.name, src_endpoint.ip]
+    window_minutes: 10
+    steps:
+      - name: failures
+        filter: {class_name: "Authentication", status: "Failure"}
+        min_count: 5
+      - name: success
+        filter: {class_name: "Authentication", status: "Success"}
+        min_count: 1
+
+  - id: auth-brute-force-attempt
+    description: "Burst of failed logons against one account from one source"
+    severity: Medium
+    risk_score: 45
+    mitre_techniques:
+      - {id: T1110, name: Brute Force}
+    group_by: [actor.user.name, src_endpoint.ip]
+    window_minutes: 10
+    steps:
+      - name: failures
+        filter: {class_name: "Authentication", status: "Failure"}
+        min_count: 3
+
+  - id: network-port-scan
+    description: "One source hitting many distinct destination ports with refused connections - reconnaissance"
+    severity: Medium
+    risk_score: 50
+    mitre_techniques:
+      - {id: T1046, name: Network Service Discovery}
+    group_by: [src_endpoint.ip]
+    window_minutes: 10
+    steps:
+      - name: refused-connections
+        filter: {class_name: "Network Activity", status: "Failure"}
+        min_count: 6
+        distinct: dst_endpoint.port
+        min_distinct: 6
